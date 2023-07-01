@@ -1,76 +1,85 @@
 let correct;
-let amtCorrect = 0;
-let seconds = 20;
-let amtIncorrect = 0;
+let amountCorrect = 0;
+let seconds = 100;
+let amountIncorrect = 0;
+
+let domElements = {
+  options: Array.from({ length: 4 }, (_, i) => ({
+    label: document.getElementById(`option${i + 1}label`),
+    input: document.getElementById(`option${i + 1}input`),
+  })),
+  flag: document.getElementById("flag"),
+  score: document.getElementById("score"),
+  time: document.getElementById("time"),
+  alert: document.getElementById("alert"),
+  card: document.getElementById("card"),
+  alertScore: document.getElementById("alertscore"),
+  alertAccuracy: document.getElementById("alertaccuracy"),
+};
+
+domElements.options.forEach(({ input }) => {
+  input.addEventListener("change", check);
+});
+
 function main() {
   let options = [];
-  const maxOptions = 4;
 
-  while (options.length < maxOptions) {
-    let country = getRandomCountry();
-    if (options.indexOf(country) === -1) {
+  while (options.length < 4) {
+    let country = countries[Math.floor(Math.random() * countries.length)];
+    if (!options.includes(country)) {
       options.push(country);
     }
   }
-  correct = options[Math.round(Math.random() * (options.length - 1))];
-  for (let i = 0; i < options.length; i++) {
-    get(`option${i + 1}label`).innerHTML = options[i].name;
-    get(`option${i + 1}input`).value = options[i].name;
-    get(`option${i + 1}input`).checked = false;
-  }
 
-  get("flag").src = correct.flag;
-}
+  correct = options[Math.floor(Math.random() * options.length)];
 
-function getRandomCountry() {
-  return countries[Math.round(Math.random() * (countries.length - 1))];
-}
+  options.forEach(({ name, flag }, i) => {
+    let { label, input } = domElements.options[i];
+    label.innerHTML = name;
+    input.value = name;
+    input.checked = false;
+  });
 
-function get(id) {
-  return document.getElementById(id);
+  domElements.flag.src = correct.flag;
 }
 
 function check() {
-  let input;
-  try {
-    input = document.querySelector('input[name = "option"]:checked').value;
-  } catch {
-    return;
-  }
-  if (input === correct.name) {
-    amtCorrect++;
-    get("score").innerHTML = amtCorrect;
-  } else {
-    amtIncorrect++;
-  }
+  let input = document.querySelector('input[name="option"]:checked');
+
+  if (input && input.value === correct.name) {
+    amountCorrect++;
+    domElements.score.innerHTML = amountCorrect;
+  } else amountIncorrect++;
+
   main();
 }
 
 function finish() {
-  clearInterval(checkInterval);
-  get("alert").style.display = "block";
-  get("card").style.display = "none";
-  get("alertscore").innerHTML = amtCorrect;
-  let percentage = Math.round((amtCorrect / (amtCorrect + amtIncorrect)) * 100);
+  domElements.alert.style.display = "block";
+  domElements.card.style.display = "none";
+  domElements.alertScore.innerHTML = amountCorrect;
+  let percentage = Math.round(
+    (amountCorrect / (amountCorrect + amountIncorrect)) * 100
+  );
   if (isNaN(percentage)) percentage = 100;
-  get("alertaccuracy").innerHTML = `${percentage}%`;
+  domElements.alertAccuracy.innerHTML = `${percentage}%`;
 }
 
 function timer() {
-  setTimeout(finish, seconds * 1000);
-  get("time").innerHTML = seconds;
-  let countdown = setInterval(function () {
+  domElements.time.innerHTML = seconds;
+  let countdown = setInterval(() => {
     seconds--;
-    get("time").textContent = seconds;
+    domElements.time.textContent = seconds;
     if (seconds <= 0) clearInterval(countdown);
-    if (seconds === 5) get("time").style.color = "#ff0000";
+    if (seconds === 5) domElements.time.style.color = "#ff0000";
   }, 1000);
+
+  setTimeout(finish, seconds * 1000);
 }
 
 function refresh() {
-  location = location;
+  location.reload();
 }
 
-let checkInterval = setInterval(check, 50);
 main();
 timer();
